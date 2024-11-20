@@ -1,5 +1,5 @@
 '''
-Windformer: A Transformer-based Neural Network for Wind Speed and Wind Direction Forecasting
+Windformer: A novel 4D high-resolution system for multi-step wind speed vector forecasting based on temporal shifted window multi-head self-attention
 '''
 import sys
 sys.path.append("..")
@@ -462,58 +462,7 @@ class WindAttention4D(nn.Module):
         self.scale = (dim // heads) ** -0.5
         self.window_size = window_size
 
-        # input_shape is current shape of the self.forward function
-        # You can run your code to record it, modify the code and rerun it
-        # Record the number of different window types
-    #     self.type_of_windows = (input_shape[0] // window_size[0]) * (input_shape[1] // window_size[1])
-    #
-    #     # For each type of window, we will construct a set of parameters according to the paper
-    #     self.earth_specific_bias = ConstructTensor(shape=(
-    #         (2 * window_size[2] - 1) * window_size[1] * window_size[1] * window_size[0] * window_size[0],
-    #         self.type_of_windows, heads))
-    #
-    #     # Making these tensors to be learnable parameters
-    #     self.earth_specific_bias = nn.Parameter(self.earth_specific_bias)
-    #
-    #     # Initialize the tensors using Truncated normal distribution
-    #     TruncatedNormalInit(self.earth_specific_bias, std=0.02)
-    #
-    #     # Construct position index to reuse self.earth_specific_bias
-    #     self.position_index = self._construct_index()
-    #
-    # def _construct_index(self):
-    #     ''' This function construct the position index to reuse symmetrical parameters of the position bias'''
-    #     # Index in the pressure level of query matrix
-    #     coords_zi = RangeTensor(self.window_size[0])
-    #     # Index in the pressure level of key matrix
-    #     coords_zj = -RangeTensor(self.window_size[0]) * self.window_size[0]
-    #
-    #     # Index in the latitude of query matrix
-    #     coords_hi = RangeTensor(self.window_size[1])
-    #     # Index in the latitude of key matrix
-    #     coords_hj = -RangeTensor(self.window_size[1]) * self.window_size[1]
-    #
-    #     # Index in the longitude of the key-value pair
-    #     coords_w = RangeTensor(self.window_size[2])
-    #
-    #     # Change the order of the index to calculate the index in total
-    #     coords_1 = stack(meshgrid([coords_zi, coords_hi, coords_w]))
-    #     coords_2 = stack(meshgrid([coords_zj, coords_hj, coords_w]))
-    #     coords_flatten_1 = flatten(coords_1, start_dimension=1)
-    #     coords_flatten_2 = flatten(coords_2, start_dimension=1)
-    #     coords = coords_flatten_1[:, :, None] - coords_flatten_2[:, None, :]
-    #     coords = TransposeDimensions(coords, (1, 2, 0))
-    #
-    #     # Shift the index for each dimension to start from 0
-    #     coords[:, :, 2] += self.window_size[2] - 1
-    #     coords[:, :, 1] *= 2 * self.window_size[2] - 1
-    #     coords[:, :, 0] *= (2 * self.window_size[2] - 1) * self.window_size[1] * self.window_size[1]
-    #
-    #     # Sum up the indexes in three dimensions
-    #     self.position_index = sum(coords, dim=-1)
-    #
-    #     # Flatten the position index to facilitate further indexing
-    #     self.position_index = flatten(self.position_index)
+
 
     def forward(self, x, mask=None):
         B_, N, C = x.shape
@@ -522,19 +471,6 @@ class WindAttention4D(nn.Module):
 
         q = q * self.scale
         attention = (q @ k.transpose(-2, -1))
-
-        # # self.earth_specific_bias is a set of neural network parameters to optimize.
-        # EarthSpecificBias = self.earth_specific_bias[self.position_index]
-        #
-        # # Reshape the learnable bias to the same shape as the attention matrix
-        # EarthSpecificBias = torch.reshape(EarthSpecificBias, (
-        #     self.window_size[0] * self.window_size[1] * self.window_size[2],
-        #     self.window_size[0] * self.window_size[1] * self.window_size[2], self.type_of_windows, self.head_number))
-        # EarthSpecificBias = TransposeDimensions(EarthSpecificBias, (2, 3, 0, 1))
-        # EarthSpecificBias = reshape(EarthSpecificBias, target_shape=[1] + EarthSpecificBias.shape)
-        #
-        # # Add the Earth-Specific bias to the attention matrix
-        # attention = attention + EarthSpecificBias
 
         if mask is not None:
             nW = mask.shape[0]
