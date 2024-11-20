@@ -5,7 +5,7 @@ This repository is the implementation of [Windformer: A novel 4D high-resolution
 - Results
 ## Model Architecture
 The model architecture is as follows:
-![Model Architecture](assets/Framework.png)
+![Model Architecture](assets/Framwork.png)
 ## Results
 The resolution compared between Windformer and HRES is as follows:
 ![Forecasting resolution](assets/resolution.png)
